@@ -1,0 +1,3 @@
+[submodule "vendor/python-sdk"]
+	path = vendor/python-sdk
+	url = git@github.com:nogayrulegroup/python-sdk.git
