@@ -2,5 +2,5 @@
 
 ## TL;DR
 ```bash
-$ ACCESS_KEY={YOUR ACCESS KEY} python main.py {IMAGE PATH}
+$ CLENT_ID={API KEY} CLENT_SECRET={SECRET KEY} python main.py {IMAGE PATH}
 ```

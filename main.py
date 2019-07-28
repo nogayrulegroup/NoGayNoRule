@@ -5,12 +5,22 @@ import base64
 
 import requests
 
-
+KEY_BASE_URL = (
+    'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials'
+    '&client_id={}&client_secret={}'
+)
 BAIDU = (
     'https://aip.baidubce.com/rest/2.0/image-classify/v2/'
-    'advanced_general?access_token='
+    'advanced_general?access_token={}'
 )
-ACCESS_KEY = os.environ['ACCESS_KEY']
+
+CLIENT_ID = os.environ['CLIENT_ID']
+CLIENT_SECRET = os.environ['CLIENT_SECRET']
+
+
+def get_access_token():
+    result = requests.post(KEY_BASE_URL.format(CLIENT_ID, CLIENT_SECRET))
+    return result.json()['access_token']
 
 
 def encode_image(image):
@@ -25,7 +35,7 @@ def load_image(path):
 
 def recognize(image_path):
     result = requests.post(
-        BAIDU + ACCESS_KEY,
+        BAIDU.format(get_access_token()),
         data={'image': load_image(image_path)})
     print(result.text)
 
