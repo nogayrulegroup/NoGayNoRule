@@ -4,6 +4,9 @@ import os
 import base64
 
 import requests
+import werkzeug
+from flask import Flask, request, abort, jsonify
+
 
 KEY_BASE_URL = (
     'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials'
@@ -16,6 +19,18 @@ BAIDU = (
 
 CLIENT_ID = os.environ['CLIENT_ID']
 CLIENT_SECRET = os.environ['CLIENT_SECRET']
+
+
+app = Flask('NoWasted')
+app.config['MAX_CONTENT_LENGTH'] = 128 * 1024  # 128KB
+
+
+@app.errorhandler(werkzeug.exceptions.BadRequest)
+def handle_bad_request(e):
+    return 'bad request!', 400
+
+
+app.register_error_handler(400, handle_bad_request)
 
 
 def get_access_token():
@@ -33,11 +48,51 @@ def load_image(path):
     return encode_image(image)
 
 
-def recognize(image_path):
+def recognize(image):
     result = requests.post(
         BAIDU.format(get_access_token()),
-        data={'image': load_image(image_path)})
-    print(result.text)
+        data={'image': image})
+    return result.json()
+
+
+def load_and_recognize(path):
+    return recognize(load_image(path))
+
+
+@app.route('/recognize/text')
+def recoginze_text():
+    text = request.values.get('text')
+    if not text:
+        abort(400)
+    return text
+
+
+@app.route('/recognize/image/base64', methods=['POST'])
+def recognize_image_base64():
+    image = request.values.get('image_base64')
+    if not image:
+        abort(400)
+    resp = recognize(image)
+    if resp.get('error_msg'):
+        return resp.get('error_msg')
+    return jsonify({
+        'result': resp['result'],
+        'total': resp['result_num'],
+    })
+
+
+@app.route('/recognize/image', methods=['POST'])
+def recognize_image():
+    image = request.files.get('image')
+    if not image:
+        abort(400)
+    resp = recognize(encode_image(image.read()))
+    if resp.get('error_msg'):
+        return resp.get('error_msg')
+    return jsonify({
+        'result': resp['result'],
+        'total': resp['result_num'],
+    })
 
 
 def main():
@@ -48,7 +103,7 @@ def main():
     args = parser.parse_args()
     if not args.image:
         print('Unexcept image path: {}', args.image)
-    recognize(args.image)
+    print(load_and_recognize(args.image))
 
 
 if __name__ == '__main__':

@@ -8,6 +8,9 @@ verify_ssl = true
 [packages]
 requests = "*"
 click = "*"
+gunicorn = "*"
+gevent = "*"
+flask = "*"
 
 [requires]
 python_version = "3.7"
