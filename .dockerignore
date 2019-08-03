@@ -2,3 +2,4 @@
 *.dev
 tags
 quickstart.sh
+dev/
