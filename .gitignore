@@ -106,3 +106,4 @@ venv.bak/
 # ctags
 tags
 Dockerfile.dev
+quickstart.sh
