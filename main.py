@@ -6,6 +6,54 @@ import base64
 import requests
 import werkzeug
 from flask import Flask, request, abort, jsonify
+from peewee import (
+    Model,
+    MySQLDatabase,
+    BigAutoField,
+    IntegerField,
+    CharField,
+    SmallIntegerField,
+    BooleanField,
+    DateTimeField
+)
+
+
+PAGE_LIMIT = 500
+
+
+db = MySQLDatabase(
+    'wasted',
+    host=os.environ['DB_HOST'],
+    port=int(os.environ['DB_PORT']),
+    user=os.environ['DB_USER'],
+    passwd=os.environ['DB_PASSWD'],
+    autoconnect=False)
+
+
+class ClassificationModel(Model):
+    id = BigAutoField()
+    item = CharField()
+    city = CharField()
+    classification = IntegerField()
+    frequency = SmallIntegerField()
+    extra_detail = CharField()
+    image_url = CharField()
+    is_deleted = BooleanField()
+    created_at = DateTimeField()
+    updated_at = DateTimeField()
+
+    class Meta:
+        database = db
+        table_name = 'tb_classification'
+
+
+@db.atomic()
+def query_with_last_id(last_id, limit=PAGE_LIMIT):
+    return (ClassificationModel
+            .select()
+            .where((ClassificationModel.id > last_id)
+                   & (ClassificationModel.is_deleted == False))
+            .limit(limit))
 
 
 KEY_BASE_URL = (
@@ -93,6 +141,19 @@ def recognize_image():
     return jsonify({
         'result': resp['result'],
         'total': resp['result_num'],
+    })
+
+
+@app.route('/download/classification')
+def download_classification():
+    last_id = request.values.get('last_id', type=int, default=0)
+    return jsonify({
+        'data': [{
+            'id': rd.id,
+            'item': rd.item,
+            'classification': rd.classification,
+            'extra_detail': rd.extra_detail,
+        } for rd in query_with_last_id(last_id)]
     })
 
 

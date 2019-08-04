@@ -11,6 +11,8 @@ click = "*"
 gunicorn = "*"
 gevent = "*"
 flask = "*"
+peewee = "*"
+pymysql = "*"
 
 [requires]
 python_version = "3.7"
