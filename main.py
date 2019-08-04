@@ -59,6 +59,11 @@ def load_and_recognize(path):
     return recognize(load_image(path))
 
 
+@app.route('/garbage')
+def index():
+    return 'Not wasted!'
+
+
 @app.route('/recognize/text')
 def recoginze_text():
     text = request.values.get('text')
