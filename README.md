@@ -120,7 +120,6 @@ CLENT_ID={API KEY} CLENT_SECRET={SECRET KEY} python main.py {IMAGE PATH}
     -F 'image_base64=[base64 string]'
   ```
 
-
 ### Download Classification
 
 ----
