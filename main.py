@@ -64,14 +64,6 @@ def index():
     return 'Not wasted!'
 
 
-@app.route('/recognize/text')
-def recoginze_text():
-    text = request.values.get('text')
-    if not text:
-        abort(400)
-    return text
-
-
 @app.route('/recognize/image/base64', methods=['POST'])
 def recognize_image_base64():
     image = request.values.get('image_base64')
@@ -79,7 +71,9 @@ def recognize_image_base64():
         abort(400)
     resp = recognize(image)
     if resp.get('error_msg'):
-        return resp.get('error_msg')
+        return jsonify({
+            'error': resp.get('error_msg'),
+        }), 400
     return jsonify({
         'result': resp['result'],
         'total': resp['result_num'],
@@ -93,7 +87,9 @@ def recognize_image():
         abort(400)
     resp = recognize(encode_image(image.read()))
     if resp.get('error_msg'):
-        return resp.get('error_msg')
+        return jsonify({
+            'error': resp.get('error_msg'),
+        }), 400
     return jsonify({
         'result': resp['result'],
         'total': resp['result_num'],
