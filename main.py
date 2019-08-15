@@ -5,7 +5,7 @@ import base64
 
 import requests
 import werkzeug
-from flask import Flask, request, abort, jsonify
+from flask import Flask, request, abort, jsonify, send_file
 from peewee import (
     Model,
     MySQLDatabase,
@@ -144,8 +144,8 @@ def recognize_image():
     })
 
 
-@app.route('/download/classification')
-def download_classification():
+@app.route('/download/cursor')
+def download_cursor():
     last_id = request.values.get('last_id', type=int, default=0)
     return jsonify({
         'data': [{
@@ -155,6 +155,11 @@ def download_classification():
             'extra_detail': rd.extra_detail,
         } for rd in query_with_last_id(last_id)]
     })
+
+
+@app.route('/download/classification')
+def download_classification():
+    return send_file('static/trash_info.csv')
 
 
 def main():

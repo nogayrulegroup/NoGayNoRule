@@ -120,14 +120,14 @@ CLENT_ID={API KEY} CLENT_SECRET={SECRET KEY} python main.py {IMAGE PATH}
     -F 'image_base64=[base64 string]'
   ```
 
-### Download Classification
+### Download Cursor
 
 ----
   下载分类数据，一次最多返回 500 条数据
 
 * **URL**
 
-  /download/classification
+  /download/cursor
 
 * **Method:**
 
@@ -177,4 +177,35 @@ CLENT_ID={API KEY} CLENT_SECRET={SECRET KEY} python main.py {IMAGE PATH}
 
   ```bash
     curl -X GET http://127.0.0.1:8010/download/classification?last_id=499
+  ```
+
+### Download Classification
+
+----
+  下载全量分类数据
+
+* **URL**
+
+  /download/classification
+
+* **Method:**
+
+  `GET`
+
+* **URL Params**
+
+* **Data Params**
+
+  None
+
+* **Success Response:**
+
+  * **Code:** 200 <br />
+    **Content:**
+    file object
+
+* **Sample Call:**
+
+  ```bash
+    curl -X GET http://127.0.0.1:8010/download/classification
   ```
