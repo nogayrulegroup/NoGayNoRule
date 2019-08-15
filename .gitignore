@@ -109,3 +109,4 @@ Dockerfile.dev
 quickstart.sh
 dev/
 .vscode/
+trash_info.csv
