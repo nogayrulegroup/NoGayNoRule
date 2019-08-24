@@ -16,9 +16,13 @@ from peewee import (
     BooleanField,
     DateTimeField
 )
+from celery import Celery
+from celery.schedules import crontab
 
 
 PAGE_LIMIT = 500
+SNAPSHOT_FILE = 'static/snapshot/classification.csv'
+SNAPSHOT_FILE_NEW = SNAPSHOT_FILE + '.1'
 
 
 db = MySQLDatabase(
@@ -27,7 +31,8 @@ db = MySQLDatabase(
     port=int(os.environ['DB_PORT']),
     user=os.environ['DB_USER'],
     passwd=os.environ['DB_PASSWD'],
-    autoconnect=False)
+    autoconnect=False,
+    charset='utf8mb4')
 
 
 class ClassificationModel(Model):
@@ -54,6 +59,15 @@ def query_with_last_id(last_id, limit=PAGE_LIMIT):
             .where((ClassificationModel.id > last_id)
                    & (ClassificationModel.is_deleted == False))
             .limit(limit))
+
+
+@db.atomic()
+def dump_classification():
+    return (ClassificationModel
+            .select()
+            .where(ClassificationModel.is_deleted == False)
+            .tuples()
+            .iterator())
 
 
 KEY_BASE_URL = (
@@ -159,7 +173,28 @@ def download_cursor():
 
 @app.route('/download/classification')
 def download_classification():
-    return send_file('static/trash_info.csv')
+    return send_file(SNAPSHOT_FILE)
+
+
+# Celery
+celerybeat = Celery()
+celerybeat.conf.beat_schedule = {
+    'snapshot': {
+        'task': 'main.setup_periodic_tasks',
+        'schedule': crontab(hour=1),
+    },
+}
+
+
+@celerybeat.task
+def snapshot_classification():
+    with open(SNAPSHOT_FILE_NEW, 'wt') as fd:
+        for r in dump_classification():
+            fd.write(','.join(map(str, r)))
+            fd.write('\n')
+        fd.flush()
+
+    os.rename(SNAPSHOT_FILE_NEW, SNAPSHOT_FILE)
 
 
 def main():
