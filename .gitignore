@@ -105,6 +105,10 @@ venv.bak/
 
 # ctags
 tags
+
+# MacOS
+.DS_Store
+
 Dockerfile.dev
 quickstart.sh
 dev/
