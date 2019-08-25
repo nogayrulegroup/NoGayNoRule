@@ -2,6 +2,8 @@
 
 import os
 import base64
+import hashlib
+import logging
 
 import requests
 import werkzeug
@@ -21,8 +23,14 @@ from celery.schedules import crontab
 
 
 PAGE_LIMIT = 500
-SNAPSHOT_FILE = 'static/snapshot/classification.csv'
+
+STATIC_DIR = 'static'
+SNAPSHOT_FILE = os.path.join(STATIC_DIR, 'snapshot/classification.csv')
 SNAPSHOT_FILE_NEW = SNAPSHOT_FILE + '.1'
+USER_UPLOAD_DIR = os.path.join(STATIC_DIR, 'user-upload')
+
+
+logger = logging.getLogger()
 
 
 db = MySQLDatabase(
@@ -174,6 +182,25 @@ def download_cursor():
 @app.route('/download/classification')
 def download_classification():
     return send_file(SNAPSHOT_FILE)
+
+
+@app.route('/file-upload', methods=['POST'])
+def upload_file():
+    fp = request.files.get('file')
+    ext = request.values.get('extension')
+    content = fp.read()
+
+    m = hashlib.md5()
+    m.update(content)
+    h = m.hexdigest()
+
+    path = os.path.join(USER_UPLOAD_DIR, h[0], h[1])
+    if not os.path.isdir(path):
+        os.makedirs(path, 0o755)
+    with open(os.path.join(path, h[2:]) + '.' + ext, 'wb') as fd:
+        fd.write(content)
+        fd.flush()
+    return h, 200
 
 
 # Celery
