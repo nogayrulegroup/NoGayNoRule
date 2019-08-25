@@ -50,7 +50,7 @@ class ClassificationModel(Model):
     classification = IntegerField()
     frequency = SmallIntegerField()
     extra_detail = CharField()
-    image_url = CharField()
+    image_hash = CharField()
     is_deleted = BooleanField()
     created_at = DateTimeField()
     updated_at = DateTimeField()
@@ -72,7 +72,12 @@ def query_with_last_id(last_id, limit=PAGE_LIMIT):
 @db.atomic()
 def dump_classification():
     return (ClassificationModel
-            .select()
+            .select(ClassificationModel.id,
+                    ClassificationModel.item,
+                    ClassificationModel.city,
+                    ClassificationModel.classification,
+                    ClassificationModel.extra_detail,
+                    ClassificationModel.image_hash)
             .where(ClassificationModel.is_deleted == False)
             .tuples()
             .iterator())
@@ -148,6 +153,11 @@ def recognize_image_base64():
         'result': resp['result'],
         'total': resp['result_num'],
     })
+
+
+@app.route('/classification/', methods=['PUT'])
+def define_classification():
+    pass
 
 
 @app.route('/recognize/image', methods=['POST'])
