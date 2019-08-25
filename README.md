@@ -308,8 +308,6 @@ CLENT_ID={API KEY} CLENT_SECRET={SECRET KEY} python main.py {IMAGE PATH}
 
     `file=[fileobject]`
 
-    `extension=[string]`
-
   **Optional**
 
 * **Data Params**

@@ -281,8 +281,8 @@ def download_user_upload(mdhash):
 @app.route('/file-upload', methods=['POST'])
 def upload_file():
     fp = request.files.get('file')
-    ext = request.values.get('extension')
     content = fp.read()
+    ext = fp.filename.split('.')[-1]
 
     m = hashlib.md5()
     m.update(content)
