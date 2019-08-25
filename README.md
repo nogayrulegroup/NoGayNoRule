@@ -304,6 +304,8 @@ CLENT_ID={API KEY} CLENT_SECRET={SECRET KEY} python main.py {IMAGE PATH}
 
 * **URL Params**
 
+  **Required**
+
     `file=[fileobject]`
 
     `extension=[string]`
@@ -312,7 +314,10 @@ CLENT_ID={API KEY} CLENT_SECRET={SECRET KEY} python main.py {IMAGE PATH}
 
 * **Data Params**
 
-  file hash
+  **Required**
+  
+
+  **Optional**
 
 * **Success Response:**
 
@@ -329,4 +334,103 @@ CLENT_ID={API KEY} CLENT_SECRET={SECRET KEY} python main.py {IMAGE PATH}
     curl -X POST http://127.0.0.1:8010/file-upload \
     -F extension=jpg \
     -F file=@image.jpeg
+  ```
+
+### Add Garbage
+
+----
+  上传新分类垃圾
+
+* **URL**
+
+  /classification/
+
+* **Method:**
+
+  `POST`
+
+* **URL Params**
+
+  **Required**
+
+  **Optional**
+
+* **Data Params**
+
+  **Required**
+
+    `item=[string]`
+
+    `classification=[integer]`
+
+  **Optional**
+
+  `extra_detail=[string]`
+  
+  `image_hash=[string]`
+
+* **Success Response:**
+
+  * **Code:** 200 <br />
+    **Content:**
+
+    ```text
+    OK
+    ```
+
+* **Sample Call:**
+
+  ```bash
+    curl -X POST \
+    http://127.0.0.1:8010/classification/ \
+    -F classification=4 \
+    -F 'item=杰宝'
+  ```
+
+### Updade Classification Info
+
+----
+  更新垃圾信息
+
+* **URL**
+
+  /classification/:id
+
+* **Method:**
+
+  `PUT`
+
+* **URL Params**
+
+  **Required**
+
+    `id=[integer]`
+
+  **Optional**
+
+* **Data Params**
+
+  **Required**
+
+  **Optional**
+
+  `extra_detail=[string]`
+  
+  `classification=[integer]`
+
+* **Success Response:**
+
+  * **Code:** 200 <br />
+    **Content:**
+
+    ```text
+    OK
+    ```
+
+* **Sample Call:**
+
+  ```bash
+    curl -X POST \
+    http://127.0.0.1:8010/classification/4000 \
+    -F classification=4
   ```
