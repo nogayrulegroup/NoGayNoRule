@@ -285,7 +285,7 @@ def upload_file():
     path = os.path.join(USER_UPLOAD_DIR, h[0], h[1])
     if not os.path.isdir(path):
         os.makedirs(path, 0o755)
-    with open(os.path.join(path, h[2:]) + '.' + ext, 'wb') as fd:
+    with open(os.path.join(path, h[2:] + ext.upper()) + '.' + ext, 'wb') as fd:
         fd.write(content)
         fd.flush()
     return h, 200
