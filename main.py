@@ -301,7 +301,7 @@ def upload_file():
 celerybeat = Celery()
 celerybeat.conf.beat_schedule = {
     'snapshot': {
-        'task': 'main.setup_periodic_tasks',
+        'task': 'main.snapshot_classification',
         'schedule': crontab(minute=0, hour='*/1'),
     },
 }
