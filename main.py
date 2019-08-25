@@ -16,7 +16,8 @@ from peewee import (
     CharField,
     SmallIntegerField,
     BooleanField,
-    DateTimeField
+    DateTimeField,
+    DoesNotExist
 )
 from celery import Celery
 from celery.schedules import crontab
@@ -28,6 +29,17 @@ STATIC_DIR = 'static'
 SNAPSHOT_FILE = os.path.join(STATIC_DIR, 'snapshot/classification.csv')
 SNAPSHOT_FILE_NEW = SNAPSHOT_FILE + '.1'
 USER_UPLOAD_DIR = os.path.join(STATIC_DIR, 'user-upload')
+
+
+CLASSIFICATION_TYPES = {
+    0: 'unready',
+    1: 'hazardous',
+    2: 'recyclable',
+    4: 'residual',
+    8: 'wet',
+    16: 'large',
+    32: 'decoration',
+}
 
 
 logger = logging.getLogger()
@@ -83,6 +95,31 @@ def dump_classification():
             .iterator())
 
 
+@db.atomic()
+def fetchone_item_by_name(name):
+    try:
+        return (ClassificationModel
+                .select()
+                .where((ClassificationModel.is_deleted == False)
+                       & (ClassificationModel.item == name))
+                .order_by(ClassificationModel.id.desc())
+                .get())
+    except DoesNotExist:
+        return None
+
+
+@db.atomic()
+def fetchone_item(item_id):
+    try:
+        return (ClassificationModel
+                .select()
+                .where((ClassificationModel.id == item_id)
+                       & (ClassificationModel.is_deleted == False))
+                .get())
+    except DoesNotExist:
+        return None
+
+
 KEY_BASE_URL = (
     'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials'
     '&client_id={}&client_secret={}'
@@ -103,9 +140,6 @@ app.config['MAX_CONTENT_LENGTH'] = 128 * 1024  # 128KB
 @app.errorhandler(werkzeug.exceptions.BadRequest)
 def handle_bad_request(e):
     return 'bad request!', 400
-
-
-app.register_error_handler(400, handle_bad_request)
 
 
 def get_access_token():
@@ -155,9 +189,53 @@ def recognize_image_base64():
     })
 
 
-@app.route('/classification/', methods=['PUT'])
+@app.route('/classification/', methods=['POST'])
 def define_classification():
-    pass
+    item = request.values.get('item', type=str)
+    classification = request.values.get('classification', type=int)
+    extra_detail = request.values.get('extra_detail', type=str, default='')
+    image_hash = request.values.get('image_hash', type=str, default='')
+
+    if not all([item, classification]):
+        abort(400)
+    if classification not in CLASSIFICATION_TYPES:
+        return 'Uncategorized classification', 400
+
+    exist = fetchone_item_by_name(item)
+    if exist:
+        return '{} already exists'.format(item), 400
+
+    new_item = ClassificationModel(
+        item=item,
+        classification=classification,
+        extra_detail=extra_detail,
+        image_hash=image_hash)
+    new_item.save()
+
+    return 'OK'
+
+
+@app.route('/classification/<int:item_id>', methods=['PUT'])
+def update_item_info(item_id):
+    classification = request.values.get('classification', type=int)
+    extra_detail = request.values.get('extra_detail', type=str)
+
+    if not any([classification, extra_detail]):
+        abort(400)
+    if classification not in CLASSIFICATION_TYPES:
+        abort(400, 'Uncategorized classification')
+
+    item = fetchone_item(item_id)
+    if not item:
+        abort(404, 'Item {} not found'.format(item_id))
+
+    if classification:
+        item.classification = classification
+    if extra_detail:
+        item.extra_detail = extra_detail
+    item.save()
+
+    return 'OK'
 
 
 @app.route('/recognize/image', methods=['POST'])
