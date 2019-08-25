@@ -7,7 +7,7 @@ import logging
 
 import requests
 import werkzeug
-from flask import Flask, request, abort, jsonify, send_file
+from flask import Flask, request, abort, jsonify, send_file, redirect
 from peewee import (
     Model,
     MySQLDatabase,
@@ -270,6 +270,12 @@ def download_cursor():
 @app.route('/download/classification')
 def download_classification():
     return send_file(SNAPSHOT_FILE)
+
+
+@app.route('/download/user-upload/<string:mdhash>')
+def download_user_upload(mdhash):
+    name = mdhash[2:] + '.' + mdhash[-3:].lower()
+    return redirect('/'.join(['/user-upload', mdhash[0], mdhash[1], name]))
 
 
 @app.route('/file-upload', methods=['POST'])
