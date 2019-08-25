@@ -302,7 +302,7 @@ celerybeat = Celery()
 celerybeat.conf.beat_schedule = {
     'snapshot': {
         'task': 'main.setup_periodic_tasks',
-        'schedule': crontab(minute=0),
+        'schedule': crontab(minute=0, hour='*'),
     },
 }
 
