@@ -287,3 +287,46 @@ CLENT_ID={API KEY} CLENT_SECRET={SECRET KEY} python main.py {IMAGE PATH}
   ```bash
     curl -X GET http://127.0.0.1:8010/download/classification
   ```
+
+
+### File Upload
+
+----
+  文件/图片上传接口
+
+* **URL**
+
+  /file-upload
+
+* **Method:**
+
+  `POST`
+
+* **URL Params**
+
+    `file=[fileobject]`
+
+    `extension=[string]`
+
+  **Optional**
+
+* **Data Params**
+
+  file hash
+
+* **Success Response:**
+
+  * **Code:** 200 <br />
+    **Content:**
+
+    ```text
+    3ab0953778b8e3a615e58ab2c657cf4b
+    ```
+
+* **Sample Call:**
+
+  ```bash
+    curl -X POST http://127.0.0.1:8010/file-upload \
+    -F extension=jpg \
+    -F file=@image.jpeg
+  ```
