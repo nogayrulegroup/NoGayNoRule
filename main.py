@@ -303,7 +303,15 @@ celerybeat.conf.beat_schedule = {
 
 @celerybeat.task
 def snapshot_classification():
+
+    def write_header(fd):
+        fd.write('id,item,city,classification,extra_detail,image_hash')
+        fd.write('\n')
+        fd.flush
+
     with open(SNAPSHOT_FILE_NEW, 'wt') as fd:
+
+        write_header(fd)
         for r in dump_classification():
             fd.write(','.join(map(str, r)))
             fd.write('\n')
